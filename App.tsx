@@ -15,7 +15,12 @@ import {
   Play,
   Pause,
   Loader2,
-  ShieldCheck
+  ShieldCheck,
+  Save,
+  Trash2,
+  Lock,
+  EyeOff,
+  ServerOff
 } from 'lucide-react';
 import { AppTab, Devotional, VersePoster as PosterType } from './types';
 import { generateDailyDevotional, generateAudioForVerse } from './services/geminiService';
@@ -23,8 +28,101 @@ import AudioPlayer from './components/AudioPlayer';
 import VersePoster from './components/VersePoster';
 import BiblePlan from './components/BiblePlan';
 import AdBanner from './components/AdBanner';
-import PrayerModal from './components/PrayerModal';
-import PrivacyPolicyModal from './components/PrivacyPolicyModal';
+
+// --- COMPONENTES INTERNOS PARA EVITAR ERROS DE IMPORTAÇÃO ---
+
+const PrayerModalInternal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const [prayerText, setPrayerText] = useState('');
+  const [savedPrayers, setSavedPrayers] = useState<any[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('user_prayers');
+    if (stored) setSavedPrayers(JSON.parse(stored));
+  }, []);
+
+  const savePrayer = () => {
+    if (!prayerText.trim()) return;
+    const newPrayer = {
+      id: Date.now().toString(),
+      text: prayerText,
+      date: new Date().toLocaleDateString('pt-BR')
+    };
+    const updated = [newPrayer, ...savedPrayers];
+    setSavedPrayers(updated);
+    localStorage.setItem('user_prayers', JSON.stringify(updated));
+    setPrayerText('');
+  };
+
+  const deletePrayer = (id: string) => {
+    const updated = savedPrayers.filter(p => p.id !== id);
+    setSavedPrayers(updated);
+    localStorage.setItem('user_prayers', JSON.stringify(updated));
+  };
+
+  return (
+    <div className="fixed inset-0 z-[1000] bg-white animate-in slide-in-from-right duration-500 flex flex-col">
+      <header className="p-6 border-b border-amber-50 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Heart className="text-red-500 fill-red-500 w-5 h-5" />
+          <h2 className="text-xl font-bold text-gray-800 serif">Minhas Preces</h2>
+        </div>
+        <button onClick={onClose} className="p-2 bg-gray-100 rounded-full"><X className="w-5 h-5" /></button>
+      </header>
+      <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        <div className="bg-amber-50 rounded-[2rem] p-6 border border-amber-100 shadow-inner">
+          <textarea 
+            className="w-full bg-transparent border-none focus:ring-0 text-gray-700 placeholder:text-amber-900/30 text-lg resize-none min-h-[150px]"
+            placeholder="Abra seu coração..."
+            value={prayerText}
+            onChange={(e) => setPrayerText(e.target.value)}
+          />
+          <button 
+            onClick={savePrayer}
+            className="mt-4 w-full bg-amber-500 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2"
+          >
+            <Save className="w-5 h-5" /> Salvar Oração
+          </button>
+        </div>
+        <div className="space-y-4 pb-20">
+          {savedPrayers.map(p => (
+            <div key={p.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-[10px] font-bold text-amber-500">{p.date}</span>
+                <button onClick={() => deletePrayer(p.id)} className="text-gray-300 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+              </div>
+              <p className="text-gray-600 italic">"{p.text}"</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PrivacyModalInternal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
+  <div className="fixed inset-0 z-[1000] bg-white animate-in slide-in-from-bottom duration-500 flex flex-col">
+    <header className="p-6 border-b border-amber-50 flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <ShieldCheck className="text-amber-600 w-5 h-5" />
+        <h2 className="text-xl font-bold text-gray-800 serif">Privacidade</h2>
+      </div>
+      <button onClick={onClose} className="p-2 bg-gray-100 rounded-full"><X className="w-5 h-5" /></button>
+    </header>
+    <div className="flex-1 overflow-y-auto p-8 space-y-6">
+      <div className="bg-amber-50 p-6 rounded-3xl flex gap-4">
+        <Lock className="w-6 h-6 text-amber-600" />
+        <p className="text-sm text-amber-900">Suas orações são privadas e ficam apenas no seu aparelho.</p>
+      </div>
+      <div className="bg-blue-50 p-6 rounded-3xl flex gap-4">
+        <EyeOff className="w-6 h-6 text-blue-600" />
+        <p className="text-sm text-blue-900">Não rastreamos seus dados pessoais.</p>
+      </div>
+      <p className="text-xs text-gray-500 leading-relaxed">Desenvolvido por HS-Soluções para levar paz e esperança a todos.</p>
+    </div>
+  </div>
+);
+
+// --- COMPONENTE PRINCIPAL ---
 
 const DEFAULT_POSTERS: PosterType[] = [
   { id: '1', text: "O Senhor é o meu pastor; nada me faltará.", reference: "Salmos 23:1", imageUrl: "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&q=80&w=800" },
@@ -131,9 +229,7 @@ const App: React.FC = () => {
       {showSearch && (
         <div className="fixed inset-0 z-[1000] bg-white p-8 flex flex-col items-center animate-in fade-in duration-300">
           <div className="w-full flex justify-end mb-12">
-            <button onClick={() => setShowSearch(false)} className="p-4 bg-gray-100 rounded-full">
-              <X className="w-6 h-6 text-gray-600" />
-            </button>
+            <button onClick={() => setShowSearch(false)} className="p-4 bg-gray-100 rounded-full"><X className="w-6 h-6 text-gray-600" /></button>
           </div>
           <div className="max-w-md w-full text-center space-y-10">
             <h2 className="text-4xl font-bold serif text-gray-800">Sua Busca</h2>
@@ -142,21 +238,19 @@ const App: React.FC = () => {
                 autoFocus
                 type="text"
                 className="w-full bg-amber-50 border-2 border-amber-100 rounded-[2rem] py-6 px-8 text-2xl focus:outline-none focus:border-amber-400"
-                placeholder="Ex: Paciência..."
+                placeholder="Ex: Esperança..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && loadDevotional(searchQuery)}
               />
-              <button onClick={() => loadDevotional(searchQuery)} className="absolute right-3 top-1/2 -translate-y-1/2 bg-amber-500 text-white p-4 rounded-3xl">
-                <Search className="w-7 h-7" />
-              </button>
+              <button onClick={() => loadDevotional(searchQuery)} className="absolute right-3 top-1/2 -translate-y-1/2 bg-amber-500 text-white p-4 rounded-3xl"><Search className="w-7 h-7" /></button>
             </div>
           </div>
         </div>
       )}
 
-      {showPrayerModal && <PrayerModal onClose={() => setShowPrayerModal(false)} />}
-      {showPrivacyModal && <PrivacyPolicyModal onClose={() => setShowPrivacyModal(false)} />}
+      {showPrayerModal && <PrayerModalInternal onClose={() => setShowPrayerModal(false)} />}
+      {showPrivacyModal && <PrivacyModalInternal onClose={() => setShowPrivacyModal(false)} />}
 
       <header className="sticky top-0 z-[50] bg-white/80 backdrop-blur-lg border-b border-amber-50 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -233,20 +327,10 @@ const App: React.FC = () => {
             <div className="grid grid-cols-1 gap-6">
               {audioList.map((item, i) => {
                 const isCurrent = currentAudioIndex === i;
-                const containerStyles = isCurrent 
-                  ? "bg-amber-50 border-amber-400 shadow-xl" 
-                  : "bg-white border-transparent shadow-sm";
-                const iconStyles = isCurrent 
-                  ? "bg-amber-500 text-white" 
-                  : "bg-amber-50 text-amber-600";
-                const btnStyles = isCurrent 
-                  ? "bg-amber-500 text-white" 
-                  : "bg-amber-100 text-amber-600";
-
                 return (
-                  <div key={i} onClick={() => handlePlayAudioList(i, item.text)} className={"p-6 rounded-[2rem] border-2 flex items-center justify-between cursor-pointer transition-all " + containerStyles}>
+                  <div key={i} onClick={() => handlePlayAudioList(i, item.text)} className={"p-6 rounded-[2rem] border-2 flex items-center justify-between cursor-pointer transition-all " + (isCurrent ? "bg-amber-50 border-amber-400" : "bg-white border-transparent shadow-sm")}>
                     <div className="flex items-center gap-4">
-                      <div className={"w-14 h-14 rounded-2xl flex items-center justify-center " + iconStyles}>
+                      <div className={"w-14 h-14 rounded-2xl flex items-center justify-center " + (isCurrent ? "bg-amber-500 text-white" : "bg-amber-50 text-amber-600")}>
                         {isCurrent && audioLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <item.icon className="w-6 h-6" />}
                       </div>
                       <div>
@@ -254,7 +338,7 @@ const App: React.FC = () => {
                         <p className="text-xs text-gray-400">{item.duration}</p>
                       </div>
                     </div>
-                    <div className={"w-10 h-10 rounded-full flex items-center justify-center " + btnStyles}>
+                    <div className={"w-10 h-10 rounded-full flex items-center justify-center " + (isCurrent ? "bg-amber-500 text-white" : "bg-amber-100 text-amber-600")}>
                       {isCurrent ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
                     </div>
                   </div>
