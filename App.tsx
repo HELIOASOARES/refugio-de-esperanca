@@ -4,12 +4,12 @@ import {
   Home, Book, Mic2, Image as ImageIcon, Sparkles, 
   RefreshCw, AlertTriangle, Key, Menu, X
 } from 'lucide-react';
-import { AppTab, Devotional, VersePoster as PosterType } from './types';
-import { generateDailyDevotional } from './services/geminiService';
-import AudioPlayer from './components/AudioPlayer';
-import VersePoster from './components/VersePoster';
-import BiblePlan from './components/BiblePlan';
-import AdBanner from './components/AdBanner';
+import { AppTab, Devotional, VersePoster as PosterType } from './types.ts';
+import { generateDailyDevotional } from './services/geminiService.ts';
+import AudioPlayer from './components/AudioPlayer.tsx';
+import VersePoster from './components/VersePoster.tsx';
+import BiblePlan from './components/BiblePlan.tsx';
+import AdBanner from './components/AdBanner.tsx';
 
 const SetupGuide: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
   <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center animate-in fade-in duration-700">
