@@ -1,0 +1,8 @@
+
+{
+  "name": "Refúgio de Esperança",
+  "description": "Um santuário digital para devocionais diários, leitura bíblica e momentos de paz, desenhado para inspirar esperança e amor em cada coração.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

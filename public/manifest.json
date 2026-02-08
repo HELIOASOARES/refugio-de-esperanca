@@ -1,0 +1,26 @@
+
+{
+  "name": "Refúgio de Esperança",
+  "short_name": "Refúgio",
+  "description": "Um santuário digital para devocionais diários, leitura bíblica e momentos de paz.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdfbf7",
+  "theme_color": "#f59e0b",
+  "categories": ["lifestyle", "books"],
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3004/3004613.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3004/3004613.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
