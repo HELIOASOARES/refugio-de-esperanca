@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Play, Pause, Volume2, Loader2 } from 'lucide-react';
-import { generateAudioForVerse } from '../services/geminiService';
+import { generateAudioForVerse } from '../services/geminiService.ts';
 
 interface AudioPlayerProps {
   verse: string;
