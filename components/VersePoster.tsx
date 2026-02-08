@@ -1,8 +1,8 @@
 
-import React, { useState, useRef } from 'react';
-import { Download, Share2, Heart, Check, Loader2 } from 'lucide-react';
-import { VersePoster as PosterType } from '../types';
-import ShareMenu from './ShareMenu';
+import React, { useState } from 'react';
+import { Download, Share2, Heart, Loader2 } from 'lucide-react';
+import { VersePoster as PosterType } from '../types.ts';
+import ShareMenu from './ShareMenu.tsx';
 
 interface VersePosterProps {
   poster: PosterType;
